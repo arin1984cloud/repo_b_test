@@ -16,19 +16,19 @@ jobs:
       - name: Checkout Repo A
         uses: actions/checkout@v4
         with:
-          repository: my-org/repo-a
+          repository: arin1984cloud/repo_a_test
           ref: ${{ github.event.client_payload.ref }}
           token: ${{ secrets.REPO_A_TOKEN }}
-          path: repo-a
+          path: repo_a_test
 
       - name: Verify Repo A contents
         run: |
           echo "Checked out Repo A commit ${{ github.event.client_payload.ref }}"
-          ls -R repo-a | head -20
+          ls -R repo_a_test | head -20
 
       # Run Repo A’s CI/CD logic here
       - name: Run CI/CD for Repo A
-        working-directory: repo-a
+        working-directory: repo_a_test
         run: |
           echo "Running CI/CD pipeline for Repo A"
           # example: npm ci && npm test
