@@ -1,0 +1,35 @@
+name: CI/CD for Repo A
+
+on:
+  repository_dispatch:
+    types: [run-ci-cd]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # (Optional) Checkout Repo B if you need its code
+      - name: Checkout Repo B
+        uses: actions/checkout@v4
+
+      # Checkout Repo A at the commit SHA received
+      - name: Checkout Repo A
+        uses: actions/checkout@v4
+        with:
+          repository: my-org/repo-a
+          ref: ${{ github.event.client_payload.ref }}
+          token: ${{ secrets.REPO_A_TOKEN }}
+          path: repo-a
+
+      - name: Verify Repo A contents
+        run: |
+          echo "Checked out Repo A commit ${{ github.event.client_payload.ref }}"
+          ls -R repo-a | head -20
+
+      # Run Repo A’s CI/CD logic here
+      - name: Run CI/CD for Repo A
+        working-directory: repo-a
+        run: |
+          echo "Running CI/CD pipeline for Repo A"
+          # example: npm ci && npm test
+          # or: mvn clean install
