@@ -26,7 +26,7 @@ jobs:
 
       - name: Fetch Repo A at the commit HEAD_SHA
         run: |
-          git fetch origin ${{ github.event.client_payload.head_sha }}
+          cd repo_a_test && git fetch origin ${{ github.event.client_payload.head_sha }}
 
       - name: Get SHA values from payload test
         run: |
