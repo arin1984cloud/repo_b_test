@@ -15,18 +15,7 @@ jobs:
           else
             echo "✅ REPO_A_TOKEN is set"
           fi
-      - name: Get SHA values from payload test
-        run: |
-          echo "Base SHA: ${{ github.event.client_payload.base_sha }}"
-          echo "Head SHA: ${{ github.event.client_payload.head_sha }}"
-          BASE_SHA = ${{ github.event.client_payload.base_sha }}
-          HEAD_SHA = ${{ github.event.client_payload.head_sha }}
-          
-      # (Optional) Checkout Repo B if you need its code
-      - name: Checkout Repo B
-        uses: actions/checkout@v4
-
-      # Checkout Repo A at the commit SHA received
+          # Checkout Repo A at the commit SHA received
       - name: Checkout Repo A
         uses: actions/checkout@v4
         with:
@@ -35,11 +24,36 @@ jobs:
           token: ${{ secrets.REPO_A_TOKEN }}
           path: repo_a_test
 
-      - name: Verify Repo A contents
+      - name: Get SHA values from payload test
         run: |
-          echo "Checked out Repo A commit ${{ github.event.client_payload.ref }}"
-          ls -R repo_a_test | head -20
+          echo "Base SHA: ${{ github.event.client_payload.base_sha }}"
+          echo "Head SHA: ${{ github.event.client_payload.head_sha }}"
+          BASE_SHA = ${{ github.event.client_payload.base_sha }}
+          HEAD_SHA = ${{ github.event.client_payload.head_sha }}
 
+          echo "🔍 Checking changes between $BASE_SHA and $HEAD_SHA"
+
+          MODIFIED_OR_DELETED=$(git diff --name-only --diff-filter=MD "$BASE_SHA" "$HEAD_SHA" | grep 'manifests/.*\.installer\.yaml$' || true)
+          
+          if [[ -n "$MODIFIED_OR_DELETED" ]]; then
+            echo "❌ Found modified or deleted installer files - pipeline will not run:"
+            echo "$MODIFIED_OR_DELETED"
+            echo "has_new_files=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          NEW_FILES=$(git diff --name-only --diff-filter=A "$BASE_SHA" "$HEAD_SHA" | grep 'manifests/.*\.installer\.yaml$' || true)
+          
+          if [[ -z "$NEW_FILES" ]]; then
+            echo "has_new_files=false" >> "$GITHUB_OUTPUT"
+            echo "⚠️ No new installer files detected - skipping pipeline"
+          else
+            echo "has_new_files=true" >> "$GITHUB_OUTPUT"
+            echo "new_files<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$NEW_FILES" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+            echo "✅ Found new installer files: $NEW_FILES"
+          fi
       # Run Repo A’s CI/CD logic here
       - name: Run CI/CD for Repo A
         working-directory: repo_a_test
