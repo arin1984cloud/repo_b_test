@@ -28,8 +28,8 @@ jobs:
         run: |
           echo "Base SHA: ${{ github.event.client_payload.base_sha }}"
           echo "Head SHA: ${{ github.event.client_payload.head_sha }}"
-          BASE_SHA = ${{ github.event.client_payload.base_sha }}
-          HEAD_SHA = ${{ github.event.client_payload.head_sha }}
+          BASE_SHA="${{ github.event.client_payload.base_sha }}"
+          HEAD_SHA="${{ github.event.client_payload.head_sha }}"
 
           echo "🔍 Checking changes between $BASE_SHA and $HEAD_SHA"
 
