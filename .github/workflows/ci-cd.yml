@@ -16,13 +16,17 @@ jobs:
             echo "✅ REPO_A_TOKEN is set"
           fi
           # Checkout Repo A at the commit SHA received
-      - name: Checkout Repo A
+      - name: Checkout Repo A at BASE_SHA
         uses: actions/checkout@v4
         with:
           repository: arin1984cloud/repo_a_test
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.base_sha }}
           token: ${{ secrets.REPO_A_TOKEN }}
           path: repo_a_test
+
+      - name: Fetch Repo A at the commit HEAD_SHA
+        run: |
+          git fetch origin ${{ github.event.client_payload.head_sha }}
 
       - name: Get SHA values from payload test
         run: |
